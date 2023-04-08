@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fib</title>
+
+    <style>
+        label {
+            margin-bottom: 1rem;
+            display: block;
+        }
+
+        input {
+            width: 100%;
+        }
+
+        #invokeFib {
+            cursor: pointer;
+            padding: 8px;
+            background: #2a63dd;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            margin-bottom: 1rem;
+        }
+    </style>
+
+    <script type="module">
+        function fibCalculator() {
+            const fibCache = {};
+
+            return function fib(n) {
+                if (fibCache[n] !== undefined) {
+                    return fibCache[n];
+                }
+
+                if (n === 0 || n === 1) {
+                    return n;
+                }
+
+                const fibN = fib(n - 1) + fib(n - 2);
+                fibCache[n] = fibN;
+
+                return fibN;
+            };
+        }
+
+        const fib = fibCalculator();
+
+        invokeFib.addEventListener('click', () => {
+            const n = nInput.valueAsNumber;
+            const fibN = fib(n);
+
+            fibResult.innerText = `fib(${n}) = ${fibN}`;
+        });
+
+        fibForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            invokeFib.click();
+        });
+    </script>
+</head>
+
+<body>
+    <form id="fibForm">
+        <label>
+            n
+            <input id="nInput" placeholder="Enter an n value to calculate fib(n) for" type="number" min="0" max="1476"/>
+        </label>
+
+        <button type="button" id="invokeFib">Calculate fib(n)</button>
+    </form>
+
+    <div id="fibResult">fib(n) = ?</div>
+</body>
+
+</html>
