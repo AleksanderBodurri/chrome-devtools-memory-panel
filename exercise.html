@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NotReal JS Framework</title>
+
+    <script type="module">
+        function bootstrapApplication(mainElement, mainComponent) {
+            // render application
+            mainElement.innerHTML = new mainComponent().render();
+
+            // expose debug API to window object
+            window.notreal = {
+                getComponent(el) {
+                    const id = el.id;
+
+                    if (id !== undefined) {
+                        return cmpIdToInstanceMap.get(id);
+                    } else {
+                        return undefined;
+                    }
+                }
+            }
+        }
+
+        const cmpIdToInstanceMap = new Map();
+
+        let _id = 0;
+        class NotRealComponent {
+            id = `notreal-js-${_id++}`;
+            _firstRender = true;
+
+            constructor() {
+                cmpIdToInstanceMap.set(this.id, this); // record for debug API
+            }
+
+            rerender() {
+                const element = document.getElementById(this.id);
+                element.innerHTML = this.render();
+            }
+
+            afterRender() {/* noop by default */ }
+
+            _renderTemplate(template) {
+                // Use setTimeout to create a task so that the callback only executes after the component has finished rendering
+                setTimeout(() => this.afterRender(), 0);
+
+                if (this._firstRender) {
+                    this._firstRender = false;
+                    return `<div id="${this.id}">${template}</div>`
+                } else {
+                    return template;
+                }
+            }
+        }
+
+        class Main extends NotRealComponent {
+            childComponents = [
+                this.header = new HeaderComponent(),
+                this.body = new BodyComponent(),
+                this.footer = new FooterComponent()
+            ];
+
+
+            render() {
+                const template = this._renderTemplate(`
+                    ${this.header.render()}
+                    ${this.body.render()}
+                    ${this.footer.render()}
+                `);
+
+                return template;
+            }
+        }
+
+        class HeaderComponent extends NotRealComponent {
+            render() {
+                return this._renderTemplate(`
+                    <h1>
+                        Heres my todo app built with NotReal JS! (it's literally not real)
+                    </h1>
+                `);
+            }
+        }
+
+        class BodyComponent extends NotRealComponent {
+            childComponents = [
+                this.todosCmp = new TodosComponent()
+            ];
+            todos = ['Get some milk', 'Clean the house'];
+
+            _todoChoices = [
+                "Write a thank-you note to someone you appreciate.",
+                "Try a new recipe for a meal or dessert.",
+                "Call a friend or family member you haven't spoken to in a while.",
+                "Take a walk outside and enjoy nature.",
+                "Organize your closet and donate clothes you don't wear.",
+                "Learn a new skill, like knitting or coding.",
+                "Watch a movie or TV show that you've been meaning to see.",
+                "Read a book that you've been wanting to read.",
+                "Write in a journal or start a gratitude journal.",
+                "Practice meditation or mindfulness.",
+                "Do a workout or yoga session.",
+                "Volunteer at a local charity or non-profit organization.",
+                "Plan a trip or vacation for the future.",
+                "Create a budget and track your expenses.",
+                "Take a course or online class to learn something new.",
+                "Do something creative, like painting or drawing.",
+                "Declutter your workspace and organize your files.",
+                "Try a new hobby, like gardening or photography.",
+                "Write a letter to your future self.",
+                "Learn a new language or practice speaking a language you know.",
+                "Attend a concert, play, or cultural event.",
+                "Start a savings plan or invest in your future.",
+                "Research a topic you're interested in and learn more about it.",
+                "Plan a date night or outing with friends or family.",
+                "Make a DIY project or craft.",
+                "Spend time in nature, like going on a hike or camping.",
+                "Do a random act of kindness for someone else.",
+                "Listen to a podcast or audiobook on a new topic.",
+                "Take a digital detox and unplug for a day.",
+                "Create a vision board or set some personal goals for the future."
+            ];
+
+            afterRender() {
+                addTodo.addEventListener('click', () => {
+                    const randomIndex = Math.floor(Math.random() * this._todoChoices.length);
+                    this.todos.push(this._todoChoices[randomIndex]);
+
+                    this.rerender();
+                });
+
+                removeTodo.addEventListener('click', () => {
+                    this.todos.pop();
+
+                    this.rerender();
+                });
+            }
+
+            render() {
+                return this._renderTemplate(`
+                    <button id="addTodo">Add Todo</button>
+                    <button id="removeTodo">Remove Todo</button>
+                    <div>
+                        ${this.todosCmp.render({ todos: this.todos })}
+                    </div>
+                `);
+            }
+        }
+
+        class TodosComponent extends NotRealComponent {
+            render(props) {
+                return this._renderTemplate(`
+                    <ol>
+                     ${props.todos.map(todo => new ListItem().render({ todo })).join('')}    
+                    <ol>
+                `)
+            }
+        }
+
+        class ListItem extends NotRealComponent {
+            render(props) {
+                return this._renderTemplate(`
+                    <li>${props.todo}</li>
+                `);
+            }
+        }
+
+        class FooterComponent extends NotRealComponent {
+            render() {
+                return this._renderTemplate(`
+                    <footer>
+                        Copyright 2023
+                        Aleksander Bodurri
+                    </footer>
+                `)
+            }
+        }
+
+        bootstrapApplication(app, Main);
+    </script>
+</head>
+
+<body>
+    <div id="app"></div>
+</body>
+
+</html>
